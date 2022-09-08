@@ -1,0 +1,38 @@
+{
+    "manifest_version": 2,
+    "name": "TrackMail-Ext",
+    "description": "TrackMail extension for https://dash.antoninhuaut.fr/",
+    "version": "1.0.0",
+    "author": "Antonin Huaut",
+    "applications": {
+        "gecko": {
+            "id": "dashboard-trackmail-ext@antoninhuaut.fr",
+            "strict_min_version": "102.0"
+        }
+    },
+    "browser_action": {
+        "default_popup": "mainPopup/popup.html",
+        "default_title": "TrackMail",
+        "default_icon": "icons/icon-64.png"
+    },
+    "permissions": [
+        "compose",
+        "messagesRead",
+        "accountsRead"
+    ],
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "message_display_action": {
+        "default_title": "Test",
+        "default_icon": "icons/icon-64.png"
+    },
+    "icons": {
+        "512": "icons/icon.png",
+        "64": "icons/icon-64.png",
+        "32": "icons/icon-32.png",
+        "16": "icons/icon-16.png"
+    }
+}
