@@ -10,24 +10,25 @@
             "strict_min_version": "102.0"
         }
     },
-    "browser_action": {
-        "default_popup": "mainPopup/popup.html",
-        "default_title": "TrackMail",
+    "options_ui": {
+        "page": "options/index.html",
+        "open_in_tab": false,
+        "browser_style": true
+    },
+    "message_display_action": {
+        "default_title": "TODO switch on/off",
         "default_icon": "icons/icon-64.png"
     },
     "permissions": [
         "compose",
         "messagesRead",
-        "accountsRead"
+        "accountsRead",
+        "storage"
     ],
     "background": {
         "scripts": [
             "background.js"
         ]
-    },
-    "message_display_action": {
-        "default_title": "Test",
-        "default_icon": "icons/icon-64.png"
     },
     "icons": {
         "512": "icons/icon.png",
