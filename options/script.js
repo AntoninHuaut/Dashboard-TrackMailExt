@@ -4,8 +4,8 @@ const state = {
 
 const toastId = 'toastDiv';
 
-function saveToken(tokenValue) {
-    browser.storage.sync.set({
+async function saveToken(tokenValue) {
+    await browser.storage.sync.set({
         token: tokenValue
     });
 }
@@ -13,6 +13,18 @@ function saveToken(tokenValue) {
 async function getToken() {
     const syncItem = await browser.storage.sync.get('token');
     return syncItem.token ?? '';
+}
+
+async function isValidToken(tokenValue) {
+    try {
+        const res = await getTrackMailSettings(tokenValue);
+        if (!res.ok) throw new Error();
+        const responseBody = await res.json();
+
+        return { success: true, responseBody };
+    } catch (err) {
+        return { success: false, error: err };
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -23,21 +35,18 @@ document.addEventListener("DOMContentLoaded", () => {
     getToken().then(token => tokenInput.value = token);
 
     submitBtn.addEventListener('click', async () => {
-        try {
-            submitBtn.disabled = true;
+        submitBtn.disabled = true;
 
-            const res = await getTrackMailSettings(tokenInput.value);
-            if (!res.ok) throw new Error();
-            const json = await res.json();
+        const { success, responseBody } = await isValidToken(tokenInput.value);
+        // TODO use response body to show user what is the current settings
 
-            // TODO settings
-
+        if (success) {
             saveToken(tokenInput.value);
             showToast(state, toastId, 'success', "Your token has been saved!");
-        } catch (err) {
+        } else {
             showToast(state, toastId, 'danger', "Can't verify your token.");
-        } finally {
-            submitBtn.disabled = false;
         }
+
+        submitBtn.disabled = false;
     });
 });
