@@ -6,6 +6,9 @@ browser.compose.onBeforeSend.addListener((tab, details) => {
     const subject = details.subject;
 
     // Only HTML
+
+    return; // TODO
+
     if (!details.isPlainText) {
         const document = new DOMParser().parseFromString(details.body, "text/html");
 
