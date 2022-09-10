@@ -22,11 +22,14 @@ browser.compose.onBeforeSend.addListener(async (tab, details) => {
 
             const document = new DOMParser().parseFromString(details.body, "text/html");
 
-            // TODO add link tracker
             const trackerImg = document.createElement("img");
             trackerImg.src = `${BASE_URL}${paths.pixel}`;
             trackerImg.height = '0';
             trackerImg.width = '0';
+
+            [...document.links].forEach(link => {
+                link.href = `${BASE_URL}${paths.link}/${encodeURIComponent(link.href)}`;
+            });
 
             document.body.appendChild(trackerImg);
 
@@ -36,6 +39,7 @@ browser.compose.onBeforeSend.addListener(async (tab, details) => {
                 details: { ...details, body: html, deliveryFormat: "html" }
             }
         } catch (err) {
+            console.error(err);
             const errorCreateMailResponse = await blockingPopup("errorCreateMail");
 
             return {
