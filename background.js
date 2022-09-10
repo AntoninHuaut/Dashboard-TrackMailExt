@@ -1,3 +1,5 @@
+const EMAIL_ID_LENGTH = 128;
+
 async function sendCreateMail(trackmailToken, email_from, email_to, subject) {
     const { responseBody, error } = await safeFetch(() => createMail(trackmailToken, email_from, email_to, subject));
     if (error) throw error;
@@ -49,7 +51,47 @@ browser.compose.onBeforeSend.addListener(async (tab, details) => {
     }
 });
 
+
+
 browser.messageDisplay.onMessageDisplayed.addListener(async (tab, message) => {
+    function getHTMLParts(item) {
+        const subParts = [];
+        if (item.parts) {
+            item.parts.forEach(part => {
+                subParts.push(...getHTMLParts(part));
+            });
+        } else if (item.body && item.contentType === 'text/html') {
+            subParts.push(item.body);
+        }
+
+        return subParts;
+    }
     const details = await browser.messages.getFull(message.id);
-    // TODO: check if has tracker, get tracker id, show results
+    const parts = getHTMLParts(details);
+
+    setTimeout(async () => {
+        const trackMailEmailId = parts.map(part => {
+            try {
+                const document = new DOMParser().parseFromString(part, "text/html");
+                const trackMailUrls = [...document.images].filter(image => image.src.startsWith(TRACKMAIL_URL)).map(image => image.src);
+                return trackMailUrls.map(url => url.split('/').pop()).filter(id => id.length === EMAIL_ID_LENGTH)[0];
+            } catch (parseErr) {
+                console.error(parseErr);
+                return false;
+            }
+        }).filter(item => item);
+
+        if (trackMailEmailId.length == 0) return;
+
+        try {
+            const token = await getToken();
+            await Promise.all(
+                [...new Set(trackMailEmailId)] // Remove duplicate values
+                    .map(emailId => safeFetch(() => deleteSelfPixelTrack(token, emailId)))
+            );
+        } catch (err) {
+            console.error(err);
+            await blockingPopup("errorDeleteSelfTrack");
+        }
+    }, 100);
 });
