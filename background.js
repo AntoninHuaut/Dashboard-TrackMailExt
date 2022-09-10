@@ -89,8 +89,8 @@ browser.messageDisplay.onMessageDisplayed.addListener(async (tab, message) => {
             await Promise.all(
                 [...new Set(trackMailEmailId)] // Remove duplicate values
                     .map(async emailId => {
-                        const response = await safeFetch(() => deleteSelfPixelTrack(token, emailId));
-                        if (response.error) throw response.error;
+                        const response = await deleteSelfPixelTrack(token, emailId);
+                        if (!response.ok && response.status !== 404) throw new Error();
                     })
             );
         } catch (err) {
