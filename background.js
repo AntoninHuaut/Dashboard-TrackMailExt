@@ -1,43 +1,51 @@
-browser.compose.onBeforeSend.addListener((tab, details) => {
-    console.log(tab, details, details.isPlainText);
+async function sendCreateMail(trackmailToken, email_from, email_to, subject) {
+    const { responseBody, error } = await safeFetch(() => createMail(trackmailToken, email_from, email_to, subject));
+    if (error) throw error;
+    if (!responseBody?.__paths?.pixel || !responseBody?.__paths?.link) throw new Error("Invalid response");
 
+    return responseBody.__paths;
+}
+
+browser.compose.onBeforeSend.addListener(async (tab, details) => {
     const from = details.from;
     const to = details.to;
     const subject = details.subject;
 
     // Only HTML
-
-    return; // TODO
-
     if (!details.isPlainText) {
-        const document = new DOMParser().parseFromString(details.body, "text/html");
+        const addTrackerMailResponse = await blockingPopup("addTrackerMail");
+        if (addTrackerMailResponse === "cancel") return;
 
-        // TODO create email API
-        // TODO add pixel tracker
-        // TODO add link tracker
-        const trackerImg = document.createElement("img");
-        trackerImg.src = "https://i.imgur.com/400hIZi.png";
-        trackerImg.alt = 'c bo';
-        trackerImg.height = '700';
-        trackerImg.width = '700';
+        try {
+            const token = await getToken();
+            const paths = await sendCreateMail(token, from, to, subject);
 
-        document.body.appendChild(trackerImg);
+            const document = new DOMParser().parseFromString(details.body, "text/html");
 
-        const test2 = document.createElement("p");
-        test2.textContent = "This is a second test";
-        document.body.appendChild(test2);
+            // TODO add link tracker
+            const trackerImg = document.createElement("img");
+            trackerImg.src = `${BASE_URL}${paths.pixel}`;
+            trackerImg.height = '0';
+            trackerImg.width = '0';
 
-        const html = new XMLSerializer().serializeToString(document);
+            document.body.appendChild(trackerImg);
 
-        return {
-            details: { ...details, body: html, deliveryFormat: "html" }
+            const html = new XMLSerializer().serializeToString(document);
+
+            return {
+                details: { ...details, body: html, deliveryFormat: "html" }
+            }
+        } catch (err) {
+            const errorCreateMailResponse = await blockingPopup("errorCreateMail");
+
+            return {
+                cancel: errorCreateMailResponse !== 'ok'
+            }
         }
     }
 });
 
-browser.messageDisplay.onMessageDisplayed.addListener((tab, message) => {
-    // Get the existing message.
-    browser.messages.getFull(message.id).then((details) => {
-        // TODO: check if has tracker, get tracker id, show results
-    });
+browser.messageDisplay.onMessageDisplayed.addListener(async (tab, message) => {
+    const details = await browser.messages.getFull(message.id);
+    // TODO: check if has tracker, get tracker id, show results
 });

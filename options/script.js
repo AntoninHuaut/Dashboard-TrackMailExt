@@ -14,17 +14,6 @@ function getSettingsElements() {
     return { emailFrom, emailTo, subject, submitSettings, elements: [emailFrom, emailTo, subject, submitSettings] };
 }
 
-async function saveToken(tokenValue) {
-    await browser.storage.sync.set({
-        token: tokenValue
-    });
-}
-
-async function getToken() {
-    const syncItem = await browser.storage.sync.get('token');
-    return syncItem.token ?? '';
-}
-
 async function fetchAndShowSettings(token) {
     if (!token) return showToast(state, toastId, 'danger', "Your token is not valid.");
     const { emailFrom, emailTo, subject } = getSettingsElements();

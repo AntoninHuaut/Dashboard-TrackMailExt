@@ -1,5 +1,36 @@
-const BASE_URL = "https://dashapi.antoninhuaut.fr/api/v1";
-const TRACKMAIL_URL = `${BASE_URL}/app/trackmail`;
+const BASE_URL = "https://dashapi.antoninhuaut.fr";
+const API_URL = `${BASE_URL}/api/v1`;
+const TRACKMAIL_URL = `${API_URL}/app/trackmail`;
+
+/**
+ * Response:
+  {
+    "email_id": string,
+    "user_id": number,
+    "email_from": string,
+    "email_to": string,
+    "subject": string,
+    "created": Date,
+    "__paths": {
+        "pixel": "/api/v1/app/trackmail/pixelTrack/<emailId>",
+        "link": "/api/v1/app/trackmail/linkTrack/<emailId>"
+    }
+  }
+*/
+function createMail(trackmailToken, email_from, email_to, subject) {
+    return fetch(TRACKMAIL_URL + "/mail", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": 'Bearer ' + trackmailToken,
+        },
+        body: JSON.stringify({
+            email_from,
+            email_to,
+            subject,
+        })
+    });
+}
 
 function getTrackMailSettings(trackmailToken) {
     return fetch(TRACKMAIL_URL + "/settings", {
@@ -19,9 +50,9 @@ function updateTrackMailSettings(trackmailToken, log_email_from, log_email_to, l
             "Authorization": 'Bearer ' + trackmailToken,
         },
         body: JSON.stringify({
-            log_email_from: log_email_from,
-            log_email_to: log_email_to,
-            log_subject: log_subject,
+            log_email_from,
+            log_email_to,
+            log_subject,
         })
     });
 }
