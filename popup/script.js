@@ -7,6 +7,5 @@ async function notifyMode(event) {
 }
 
 async function onLoad() {
-    document.getElementById("button_ok")?.addEventListener("click", notifyMode);
-    document.getElementById("button_cancel")?.addEventListener("click", notifyMode);
+    [...document.querySelectorAll(".btn-track-submit")].forEach(item => item?.addEventListener("click", notifyMode));
 }

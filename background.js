@@ -16,7 +16,8 @@ browser.compose.onBeforeSend.addListener(async (tab, details) => {
     // Only HTML
     if (!details.isPlainText) {
         const addTrackerMailResponse = await blockingPopup("addTrackerMail");
-        if (addTrackerMailResponse === "cancel") return;
+        if (addTrackerMailResponse === "cancel") return { cancel: true }
+        else if (addTrackerMailResponse === 'no') return;
 
         try {
             const token = await getToken();
@@ -45,7 +46,7 @@ browser.compose.onBeforeSend.addListener(async (tab, details) => {
             const errorCreateMailResponse = await blockingPopup("errorCreateMail");
 
             return {
-                cancel: errorCreateMailResponse !== 'ok'
+                cancel: errorCreateMailResponse === 'cancel'
             }
         }
     }
@@ -87,7 +88,10 @@ browser.messageDisplay.onMessageDisplayed.addListener(async (tab, message) => {
             const token = await getToken();
             await Promise.all(
                 [...new Set(trackMailEmailId)] // Remove duplicate values
-                    .map(emailId => safeFetch(() => deleteSelfPixelTrack(token, emailId)))
+                    .map(async emailId => {
+                        const response = await safeFetch(() => deleteSelfPixelTrack(token, emailId));
+                        if (response.error) throw response.error;
+                    })
             );
         } catch (err) {
             console.error(err);

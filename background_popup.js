@@ -32,7 +32,7 @@ async function blockingPopup(type) {
         url: `popup/${type}.html`,
         type: "popup",
         height: 200,
-        width: 400
+        width: 500
     });
 
     return await popupClosePromise(window.id, "cancel");
