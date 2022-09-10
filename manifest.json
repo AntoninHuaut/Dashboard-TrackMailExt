@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "TrackMail-Ext",
     "description": "TrackMail extension for https://dash.antoninhuaut.fr/",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Antonin Huaut",
     "applications": {
         "gecko": {
